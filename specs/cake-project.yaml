@@ -1,0 +1,25 @@
+---
+customMetadataTypes:
+	- marbleCake:
+		name: marbleCake__mdt
+		description: A cake with a marbled appearance created by swirling together vanilla and chocolate or other flavored batters.
+		records:
+      		- chocolate.md
+      		- vanilla.md
+      		- pista.md
+		stateField: Active__c
+  	- cheeseCake:
+		name: cheeseCake__mdt
+  	  	description: Although technically not a traditional cake, cheesecake is a popular dessert consisting of a creamy filling made with cream cheese, eggs, and sugar on a cookie or graham cracker crust.
+	  	records:
+      		- chocolate.md
+      	  	- vanilla.md
+      	  	- pista.md
+		stateField: IsActive__c
+  	- coconutCake:
+		name: coconutCake__mdt
+		description: A cake infused with coconut flavor, often made with shredded coconut in the batter and coconut cream or frosting.
+	  	records:
+      		- chocolate.md
+      		- vanilla.md
+      		- pista.md

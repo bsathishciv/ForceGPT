@@ -1,0 +1,3 @@
+class UserTask extends Task {
+
+}
