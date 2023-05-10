@@ -15,6 +15,7 @@ app.use(bodyParser.json());
 
 // Endpoint to handle incoming requests
 app.post('/process', async (req, res) => {
+    console.log(req.body);
     const requestId = uuidv4();
     const requestData = req.body;
 
@@ -38,6 +39,6 @@ app.post('/process', async (req, res) => {
 });
 
 // Start the Express server
-app.listen(3000, () => {
-  console.log('Server listening on port 3000');
+app.listen(process.env.PORT || 8080, () => {
+  console.log('Server listening on port 8080');
 });

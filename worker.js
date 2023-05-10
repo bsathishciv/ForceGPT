@@ -6,8 +6,12 @@ const { initializeSalesforceConnection } = require("./salesforce/salesforce");
 const queueName = 'request-queue';
 const queue = connectQueue(queueName);
 
+console.log('Queue connected: ' +queueName);
+
 const { OpenAI } = require("langchain/llms/openai");
 const model = new OpenAI({ openAIApiKey: process.env.OPENAI_API_KEY, temperature: 0.9 });
+
+console.log('model configured!');
 
 queue.process(
     async (job) => {
