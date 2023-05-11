@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const { v4: uuidv4 } = require('uuid');
 const { connectQueue } = require('./redis-config');
 const {db} = require("./db");
+const {jobHandler} = require("./worker");
 //const store = require('data-store')({ path: process.cwd() + '/request-store.json' });
 
 //const fs = require('fs');
@@ -25,27 +26,24 @@ app.post('/process', (req, res) => {
     if (requestData.userId) {
         // overwrite the latest message for the orgId for simplicity and POC
         const obj = {
-            [requestData.userId]: {
                 ...requestData,
                 response: null,
                 isDone: false
-            }
         }
         //fs.writeFileSync(`${process.cwd()}/request-store.json`, JSON.stringify(obj));
         db.delete(requestData.userId);
-        db.set(requestData.userId, {
-            ...requestData,
-            response: null,
-            isDone: false
-        }); 
-        //db.sync();
+        console.log(db.has(requestData.userId));
+        db.set(requestData.userId, obj); 
+        console.log('1');
+        console.log(requestData.userId);
+        jobHandler({data: obj}, db)
     }
     // Store the request in Redis
-    queue.add({
+    /*queue.add({
         status: true,
         ...requestData
-    });
-
+    });*/
+    console.log('3');
     return res.send({ status: true, error: null });
 
 });

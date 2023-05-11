@@ -5,7 +5,7 @@
         "instanceUrl": "https://sathish-balaji-oce.my.salesforce.com",
         "sessionId": "00DDn00000DCOPI!AQMAQK71JsS0.k81b7iqozl6c1pDKZgj4KdbfA09HYLFwpa6uWcXqQkB.AdmRshpgGhXIQwjB_obBN9nfmsGvtkH5wbXXmM8",
         "component": "customMetadata",
-        "response": null,
-        "isDone": false
+        "response": "null",
+        "isDone": true
     }
 }

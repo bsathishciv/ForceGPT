@@ -21,10 +21,14 @@ queue.process(
     }
 );
 
-async function jobHandler(job, done) {
+// TO DO: Fix redis job remaining in queue issue
+async function jobHandler(job, db) {
     //const jsonObj = JSON.parse(fs.readFileSync(`${process.cwd()}/request-store.json`, 'utf8'));
    try {
+    console.log('2');
+    console.log(job);
         const requestData = db.get(job.data.userId);
+        console.log(requestData);
         if (requestData) {
             const conn = initializeSalesforceConnection(requestData.instanceUrl, requestData.sessionId);
             await new QueryProcessor(job.data.userId, model, db)
@@ -34,7 +38,13 @@ async function jobHandler(job, done) {
                                     .process();
             console.log(`--done--`);
         }
-   } finally {
-        done();
+   } catch (e) {
+        console.log(e);
+    }finally {
+        //done();
    }
+}
+
+module.exports = {
+    jobHandler
 }
