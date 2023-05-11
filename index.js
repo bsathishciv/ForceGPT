@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const { v4: uuidv4 } = require('uuid');
 const { connectQueue } = require('./redis-config');
 const store = require('data-store')({ path: process.cwd() + '/request-store.json' });
+const fs = require('fs');
 
 //dotenv.config()
 
@@ -40,8 +41,8 @@ app.post('/process', async (req, res) => {
 });
 
 app.get('/status/:id', (req, res) => {
-    const resp = require('data-store')({ path: process.cwd() + '/request-store.json' }).get(req.params.id);
-    console.log(resp);
+    console.log(JSON.parse(fs.readFileSync(`${process.cwd()}/request-store.json`, 'utf8')));
+    const resp = store.get(req.params.id);
     res.send(JSON.stringify(resp)); 
 });
 
