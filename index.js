@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const { v4: uuidv4 } = require('uuid');
 const { connectQueue } = require('./redis-config');
-const store = require('data-store')({ path: process.cwd() + '/request-store.json' });
+//const store = require('data-store')({ path: process.cwd() + '/request-store.json' });
 const fs = require('fs');
 
 //dotenv.config()
@@ -22,12 +22,20 @@ app.post('/process', async (req, res) => {
 
     if (requestData.userId) {
         // overwrite the latest message for the orgId for simplicity and POC
-        store.set(requestData.userId, {
+        const obj = {
+            [requestData.userId]: {
+                ...requestData,
+                response: null,
+                isDone: false
+            }
+        }
+        fs.writeFileSync(`${process.cwd()}/request-store.json`, JSON.stringify(obj));
+        /*store.set(requestData.userId, {
             ...requestData,
             response: null,
             isDone: false
         }); 
-        store.save();
+        store.save();*/
     }
 
     console.log(requestData);
