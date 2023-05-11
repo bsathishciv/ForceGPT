@@ -39,6 +39,11 @@ app.post('/process', async (req, res) => {
 
 });
 
+app.get('/status/:id', (req, res) => {
+    const resp = store.get(req.params.id);
+    res.send(JSON.stringify(resp)); 
+});
+
 // Start the Express server
 app.listen(process.env.PORT || 8086, () => {
   console.log('Server listening on port 8080');
