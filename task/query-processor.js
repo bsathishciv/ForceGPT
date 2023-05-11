@@ -110,8 +110,10 @@ class QueryProcessor {
     }
 
     generateDbUpdateTask(response) {
+        console.log(response);
         const requestData = store.get(this.userId);
         store.set(this.userId, {...requestData, response: response, isDone: true});
+        console.log(store.get(this.userId));
     }
 
     createCustomMetadataTasks() {

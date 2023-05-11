@@ -41,6 +41,7 @@ app.post('/process', async (req, res) => {
 
 app.get('/status/:id', (req, res) => {
     const resp = store.get(req.params.id);
+    console.log(resp);
     res.send(JSON.stringify(resp)); 
 });
 
