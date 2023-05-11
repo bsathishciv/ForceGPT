@@ -1,6 +1,7 @@
 const { connectQueue } = require('./redis-config');
 const { QueryProcessor } = require("./task/query-processor");
 const { initializeSalesforceConnection } = require("./salesforce/salesforce");
+const fs = require('fs');
 
 const queueName = 'request-queue';
 const queue = connectQueue(queueName);
