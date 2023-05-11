@@ -7,6 +7,7 @@ const { SalesforceTask } = require('./salesforce-task');
 const { TaskManager } = require('./task-manager');
 const { CustomMetadataPromptStrategy, SummaryPromptStrategy } = require("../salesforce/components/component-prompt-strategy");
 const store = require('data-store')({ path: process.cwd() + '/request-store.json' });
+const fs = require('fs');
 
 class QueryProcessor {
 
@@ -111,10 +112,12 @@ class QueryProcessor {
 
     generateDbUpdateTask(response) {
         console.log(response);
-        const requestData = store.get(this.userId);
-        store.set(this.userId, {...requestData, response: response, isDone: true});
-        store.save();
-        console.log(store.get(this.userId));
+        const jsonObj = JSON.parse(fs.readFileSync(`${process.cwd()}/request-store.json`, 'utf8'));
+        jsonObj[this.userId] = {...jsonObj[this.userId], response: response, isDone: true}
+        fs.writeFileSync(`${process.cwd()}/request-store.json`, JSON.stringify(jsonObj))
+        //store.set(this.userId, {...requestData, response: response, isDone: true});
+        //store.save();
+        //console.log(store.get(this.userId));
     }
 
     createCustomMetadataTasks() {
