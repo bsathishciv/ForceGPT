@@ -1,39 +1,50 @@
 const yaml = require('js-yaml');
 const fs = require('fs');
 
-export class SpecProcessor {
+class SpecProcessor {
 
-    static jsonObj;
+    jsonObj;
 
-    static {
-        //Read the Yaml file
-        const data = fs.readFileSync('./cake-project.yaml', 'utf8');
-        //Convert Yml object to JSON
-        jsonObj = yaml.load(data);
+    constructor() {
+        this.jsonObj = JSON.parse(fs.readFileSync(`${process.cwd()}/specs/cake-project.json`, 'utf8'));
     }
 
-    static getAllCustomMetadataAsMap() {
-        const map = {};
-        jsonObj.customMetadataTypes.forEach(m => map[m.name] = m.description);
-        return map;
+    getAllCustomMetadataAsMap() {
+        const mapy = {};
+        this.jsonObj.customMetadataTypes.forEach(m => {
+            mapy[m.name] = m.description;
+        });
+        return mapy;
     }
 
-    static getCustomMetadataRecordsFor(mdata) {
+    getCustomMetadataRecordsFor(mdata) {
         const map = {};
-        const match = jsonObj.customMetadataTypes.find(m => map[m.name] = mdata);
+        const match = this.jsonObj.customMetadataTypes.find(m => map[m.name] = mdata);
         if (match) {
             return match.records;
         }
         return [];
     }
 
-    static getStateFieldFor(mdata) {
+    getStateFieldFor(mdata) {
         const map = {};
-        const match = jsonObj.customMetadataTypes.find(m => map[m.name] = mdata);
+        const match = this.jsonObj.customMetadataTypes.find(m => map[m.name] = mdata);
         if (match) {
             return match.stateField;
         }
         return null;
     }
 
+    getMediaFieldsFor(objName) {
+        return this.jsonObj[objName].mediaFields;
+    }
+
+    getActivityTableFor(objName) {
+        return this.jsonObj[objName].activityTable;
+    }
+
 }
+
+module.exports = {
+    SpecProcessor
+};

@@ -5,10 +5,10 @@
 const { AiTask } = require('./ai-task');
 const { SalesforceTask } = require('./salesforce-task');
 const { TaskManager } = require('./task-manager');
-const { CustomMetadataPromptStrategy } = require("../salesforce/components/component-prompt-strategy");
+const { CustomMetadataPromptStrategy, SummaryPromptStrategy } = require("../salesforce/components/component-prompt-strategy");
 const store = require('data-store')({ path: process.cwd() + '/request-store.json' });
 
-export class QueryProcessor {
+class QueryProcessor {
 
     type;
     query;
@@ -33,6 +33,7 @@ export class QueryProcessor {
 
     setConnection(con) {
         this.conn = con;
+        return this;
     }
 
     // Generates tasks
@@ -42,10 +43,16 @@ export class QueryProcessor {
         const taskManager = new TaskManager(this);
 
         switch (this.type) {
-            case 'customMetadataType':
+            case 'customMetadata':
                 this.componentStrategyExecutor = new CustomMetadataPromptStrategy();
                 const aiTask = this.createCustomMetadataTasks();
                 taskManager.addTask(aiTask);
+                await taskManager.execute();
+                break;
+            case 'summary':
+                this.componentStrategyExecutor = new SummaryPromptStrategy();
+                const sfTask = this.createSummaryTask()
+                taskManager.addTask(sfTask);
                 await taskManager.execute();
                 break;
             default:
@@ -55,22 +62,27 @@ export class QueryProcessor {
 
     generateNextTask(oldTask, result) {
         try {
-            if (this.componentStrategyExecutor.requiresFurtherPrompt(result)) {
+            // TO DO: determine next task dynamically
+            console.log('generating new task');
+            if (this.componentStrategyExecutor.requiresFurtherAiPrompt(result)) {
                 return this.generateAiTask(
-                    this.componentStrategyExecutor.getNextPrompt(result),
-                    {userText: this.query}
+                    this.componentStrategyExecutor.getNextPrompt(result, this.query)
                 );
-            } else if (!oldTask instanceof SalesforceTask) { // TODO: this must be updated 
+            } else if (this.componentStrategyExecutor.requiresFurtherSfPrompt((oldTask instanceof SalesforceTask), result)) { // TODO: this must be updated 
                 return this.generateSalesforceTask(
                     result
                 );
             } else {
-                generateDbUpdateTask(JSON.stringify(e));
+                if (this.type == 'summary') {
+                    this.generateDbUpdateTask(JSON.stringify(result.summary));
+                } else {
+                    this.generateDbUpdateTask(JSON.stringify(result));
+                }
             }
         } catch(e) {
             console.log(e);
             if (e instanceof NoSufficientInformation) {
-                generateDbUpdateTask(JSON.stringify(result));
+                this.generateDbUpdateTask(JSON.stringify(result));
             }
         }
         return null;
@@ -82,15 +94,16 @@ export class QueryProcessor {
         }
     }
 
-    generateAiTask(prompt, inputVars) {
+    generateAiTask(prompt) {
         return new AiTask()
             .setModel(this.model)
             .setPrompt(prompt)
-            .setResultWorker(this.mergeObj)
-            .setInputVars(inputVars);
+            .setResultWorker(this.mergeObj);
     }
 
     generateSalesforceTask(result) {
+        console.log('sathish');
+        console.log(result);
         return new SalesforceTask()
             .setResultObj(this.componentStrategyExecutor.formatResultforSalesforce(result))
             .setConnection(this.conn);
@@ -101,12 +114,20 @@ export class QueryProcessor {
         store.set(this.userId, {...requestData, response: response, isDone: true});
     }
 
-    createCustomMetadataTask() {
+    createCustomMetadataTasks() {
         return this.generateAiTask(
-            this.componentStrategyExecutor.getInitialPrompt(),
-            {userText: this.query}
+            this.componentStrategyExecutor.getInitialPrompt(this.query)
         );
     }
 
+    createSummaryTask() {
+        return this.generateAiTask(
+            this.componentStrategyExecutor.getInitialPrompt(this.query)
+        );
+    }
 
+}
+
+module.exports = {
+    QueryProcessor
 }

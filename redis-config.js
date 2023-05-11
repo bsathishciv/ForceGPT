@@ -7,7 +7,7 @@ require('dotenv').config();
 
 const redisConfigUrl = (process.env.REDIS_TLS_URL ? process.env.REDIS_TLS_URL : process.env.REDIS_URL);
 const parsedURL = new URL(redisConfigUrl);
-
+console.log(redisConfigUrl);
 const connectQueue = (name) => new Queue(name, {
 	redis: {
 		host: parsedURL.hostname || 'localhost',

@@ -28,10 +28,11 @@ app.post('/process', async (req, res) => {
         }); 
     }
 
+    console.log(requestData);
     // Store the request in Redis
     queue.add({
         status: true,
-        requestData
+        ...requestData
     });
 
     return res.send({ status: true, error: null });
@@ -39,6 +40,6 @@ app.post('/process', async (req, res) => {
 });
 
 // Start the Express server
-app.listen(process.env.PORT || 8080, () => {
+app.listen(process.env.PORT || 8086, () => {
   console.log('Server listening on port 8080');
 });

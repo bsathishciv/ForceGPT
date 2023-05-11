@@ -1,7 +1,7 @@
 /**
  * 
  */
-export class TaskManager {
+class TaskManager {
 
     taskList = [];
     taskIdCounter = 1;
@@ -13,7 +13,8 @@ export class TaskManager {
     }
   
     addTask(task) {
-        console.log(`---Adding new task: ${task}`);
+        console.log(`---Adding new task---`);
+        console.log(Object.values(task.result));
         this.taskList.push(task);
         return this;
     }
@@ -24,16 +25,17 @@ export class TaskManager {
                 break;
             }
             const task = this.taskList.shift();
-            await task.prepare();
+            //await task.prepare();
             if (task) {
                 const result = await task.perform();
                 if (this.hasError(result)) {
                     await logError(result);
                     break;
                 }
-                const task = this.taskCreator.generateNextTask(task, result);
-                if (task) {
-                    this.addTask(task);
+                const newTask = this.taskCreator.generateNextTask(task, result);
+                if (newTask) {
+                    newTask.result = result;
+                    this.addTask(newTask);
                 }
             }
         }
@@ -56,3 +58,6 @@ export class TaskManager {
 
 }
 
+module.exports = {
+    TaskManager
+};

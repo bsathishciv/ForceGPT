@@ -2,9 +2,11 @@
  * 
  */
 
-const { CustomMetadataAction } = require("../salesforce/components/component-action-handler")
+const { CustomMetadataAction } = require("../salesforce/components/component-action-handler");
+const { Task } = require('./task');
+const { query, search } = require('../salesforce/salesforce');
 
-export class SalesforceTask extends Task {
+class SalesforceTask extends Task {
     
     error;
     detail = {};
@@ -13,6 +15,7 @@ export class SalesforceTask extends Task {
     resultObj;
 
     constructor(id, name) {
+        super()
         this.name = name;
         this.id = id;
     }
@@ -41,6 +44,14 @@ export class SalesforceTask extends Task {
                     .perform(this.detail.action);
                 return result;
             }
+        } else if (this.detail.action == 'query') {
+            let result = await query(this.conn, this.detail.query);
+            result = {...result, ...this.detail};
+            return result;
+        } else if (this.detail.action == 'search') {
+            let result = await search(this.conn, this.detail.query);
+            result = {...result, ...this.detail};
+            return result;
         }
         return null;
     }
@@ -48,8 +59,10 @@ export class SalesforceTask extends Task {
     generateMetadata(componentName, recordData) {
         const mdata = {
             fullName: `${componentName}.${recordData.developerName}`,
+            label: recordData.Label,
             values: []
         };
+        delete recordData.Label;
         Object.keys(recordData).forEach((key) => {
             if (key == 'developerName') {
                 return;
@@ -65,3 +78,7 @@ export class SalesforceTask extends Task {
     }
 
 }
+
+module.exports = {
+    SalesforceTask
+};

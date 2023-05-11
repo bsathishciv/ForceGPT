@@ -2,9 +2,9 @@
  * 
  */
 
-import jsforce from 'jsforce';
+const jsforce =  require('jsforce');
 
-export function initializeSalesforceConnection(instanceUrl, sessionId) {
+function initializeSalesforceConnection(instanceUrl, sessionId) {
 
     var conn = new jsforce.Connection({
         serverUrl : instanceUrl,
@@ -14,13 +14,14 @@ export function initializeSalesforceConnection(instanceUrl, sessionId) {
     return conn;
 }
 
-export async function query(con, queryString) {
+async function query(con, queryString) {
     try {
         const result = await con.query(
             queryString
         );
-        if (result && result.length) {
-            return result.records;
+        console.log(result);
+        if (result) {
+            return result;
         }
     } catch(e) {
         console.log(e);
@@ -28,19 +29,36 @@ export async function query(con, queryString) {
     return [];
 }
 
-export async function updateMetadata(con, component, metadata) {
+async function search(con, query) {
+    try {
+        const results = await con.search(query);
+        console.log(results);
+        return results;
+    } catch(e) {
+        console.log(e);
+    }
+    return [];
+}
+
+async function updateMetadata(con, component, metadata) {
     try {
         const results = await con.metadata.update(
             component, 
             metadata
         );
-        if (results && results.length) {
-            if (results[i].success) {
-                return results;
-            }
+        console.log(results);
+        if (results) {
+            return results;
         }
     } catch(e) {
         console.log(e);
     }
     return null;
 }
+
+module.exports = {
+    initializeSalesforceConnection,
+    query,
+    search,
+    updateMetadata
+};

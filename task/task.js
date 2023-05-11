@@ -2,7 +2,7 @@
  * 
  */
 
-export class Task {
+class Task {
     id;
     name;
 
@@ -10,3 +10,7 @@ export class Task {
         throw new Error('Method not implemented');
     }
 }
+
+module.exports = {
+    Task
+};

@@ -3,7 +3,7 @@
  */
 
 const { SpecProcessor } = require("../../specs/spec-processor");
-const { CustomMetadataPromptGenerator } = require("../../prompt-generator");
+const { CustomMetadataPromptGenerator, SummaryPromptGenerator } = require("../../prompt-generator");
 
 class NoSufficientInformation extends Error {
     constructor(message) {
@@ -23,9 +23,14 @@ class ComponentStrategy {
     }
 }
 
-export class CustomMetadataPromptStrategy extends ComponentStrategy {
+class CustomMetadataPromptStrategy extends ComponentStrategy {
 
     promptCount = 0;
+
+    constructor() {
+        super();
+        this.specParser = new SpecProcessor();
+    }
     
     setCustomMetadataType(type) {
         this.mdType = type;
@@ -36,40 +41,55 @@ export class CustomMetadataPromptStrategy extends ComponentStrategy {
     }
 
     // get to know the intent (action) and high level component the user is talking about.
-    getInitialPrompt() {
-        promptCount++;
-        const mdataMap = SpecProcessor.getAllCustomMetadataAsMap();
+    getInitialPrompt(query) {
+        this.promptCount++;
+        const mdataMap = this.specParser.getAllCustomMetadataAsMap();
         return CustomMetadataPromptGenerator.getPromptToMatchAnyMetadataType(
+            query,
             mdataMap,
             `{
-                action: {action},
-                componentName: {componentName}
+                "action": {action},
+                "componentName": {componentName}
             }`
         );
     }
 
-    getNextPrompt(result) {
-		switch (action) {
+    getNextPrompt(result, query) {
+		switch (result.action) {
 			case 'update':
-				return this.determineNextPromptForUpdate(result);
+				return this.determineNextPromptForUpdate(result, query);
 			case 'delete':
 				//return this.determineNextPromptForDelete(result);
                 break;
             case 'list':
 				//return this.determineNextPromptForList(result);
                 break;
-            case 'activate', 'inactivate':
-                return this.determineNextPromptForRecordState(result, action);
+            case 'activate':
+            case 'inactivate':
+                return this.determineNextPromptForRecordState(result, result.action, query);
 			default:
 				break;
 		}
     }
 
-    requiresFurtherPrompt(result) {
+    requiresFurtherAiPrompt(result) {
+        if (!result) {
+            return false;
+        }
         return this.getNextPrompt(result) != null;
     }
 
-    determineNextPromptForUpdate(result) {
+    requiresFurtherSfPrompt(isLastTaskSf, result) {
+        if (!result) {
+            return false;
+        }
+        if (!isLastTaskSf) { // needs to be a function to determine in detail whether further prompts are required
+            return true;
+        }
+        return false;
+    }
+
+    determineNextPromptForUpdate(result, query) {
         const resultObj = JSON.parse(JSON.stringify(result));
         if (resultObj.componentName == undefined) {
             // Model was not able to figure out the component from the list. 
@@ -81,12 +101,14 @@ export class CustomMetadataPromptStrategy extends ComponentStrategy {
             if (this.promptCount > 2) {
                 throw new NoSufficientInformation('Information is not sufficient to parse custom metadata record');
             }
-            promptCount++;
-            const recordMap = SpecProcessor.getCustomMetadataRecordsFor(resultObj.componentName);
+            this.promptCount++;
+            const recordMap = this.specParser.getCustomMetadataRecordsFor(resultObj.componentName);
             return CustomMetadataPromptGenerator.getPromptToMatchAnyMetadataRecord(
-                recordMap,
+                query,
+                JSON.stringify(recordMap),
                 `{
-                    recordName: {recordName}
+                    "recordName": {record.name}
+                    "recordData":{"Label":{record.label}}
                 }`
             );
         }
@@ -94,7 +116,7 @@ export class CustomMetadataPromptStrategy extends ComponentStrategy {
         return null;
     }
 
-    determineNextPromptForRecordState(result, action) {
+    determineNextPromptForRecordState(result, action, query) {
         const resultObj = JSON.parse(JSON.stringify(result));
         if (resultObj.componentName == undefined) {
             // Model was not able to figure out the component from the list. 
@@ -102,7 +124,7 @@ export class CustomMetadataPromptStrategy extends ComponentStrategy {
             throw new NoSufficientInformation('Information is not sufficient to parse custom metadata type');
         }
         if (!resultObj.recordName) {
-            return this.determineNextPromptForUpdate(result);
+            return this.determineNextPromptForUpdate(result, query);
         }
         // we have all required information. No more prompts are required
         return null;
@@ -110,6 +132,7 @@ export class CustomMetadataPromptStrategy extends ComponentStrategy {
 
     formatResultforSalesforce(result) {
         const resultObj = {
+            action: result.action,
             componentType: 'CustomMetadata',
             componentName: result.componentName,
             recordData: {
@@ -117,9 +140,11 @@ export class CustomMetadataPromptStrategy extends ComponentStrategy {
             }
         };
         if (result.action == 'activate') {
-            resultObj.recordData[SpecParser.getStateFieldFor(result.componentName)] = true;
+            resultObj.recordData[this.specParser.getStateFieldFor(result.componentName)] = true;
+            resultObj.recordData = {...resultObj.recordData, ...result.recordData};
         } else if (result.action == 'inactivate') {
-            resultObj.recordData[SpecParser.getStateFieldFor(result.componentName)] = false;
+            resultObj.recordData[this.specParser.getStateFieldFor(result.componentName)] = false;
+            resultObj.recordData = {...resultObj.recordData, ...result.recordData};
         } else if (result.action == 'update') {
             resultObj.recordData = {...resultObj.recordData, ...result.recordData};
         }
@@ -127,16 +152,114 @@ export class CustomMetadataPromptStrategy extends ComponentStrategy {
         return resultObj;
     }
 }
+
+class SummaryPromptStrategy extends ComponentStrategy {
+    
+    promptCount = 0;
+    isEndOfChain = false;
+
+    constructor() {
+        super();
+        this.specParser = new SpecProcessor();
+    }
+
+    // get to know the account user is talking about.
+    getInitialPrompt(query) {
+        this.promptCount++;
+        return SummaryPromptGenerator.getPromptToIdentifyAccount(
+            query,
+            `{
+                "name": {name}
+            }`
+        );
+    }
+
+    getSummaryPrompt(name, acts) {
+        this.promptCount++;
+        this.isEndOfChain = true;
+        return SummaryPromptGenerator.getPromptToSummarizeData(
+            name,
+            JSON.stringify(acts),
+            `{
+                "summary": {summary}
+            }`
+        );
+    }
+
+    getNextPrompt(result, query) {
+        if (result.name && !result.records) {
+            return null
+        } else if (result.records) {
+            return this.getSummaryPrompt(result.name, result.records);
+        } else {
+            return this.getInitialPrompt(query);
+        }
+    }
+
+    requiresFurtherAiPrompt(result) {
+        if (this.isEndOfChain) {
+            return false;
+        }
+        if (!result.name) {
+            return false;
+        }
+        console.log('dd');
+        return this.getNextPrompt(result) != null;
+    }
+
+    requiresFurtherSfPrompt(isLastTaskSf, result) {
+        if (this.isEndOfChain) {
+            return false;
+        }
+        console.log(result);
+        if (!result) {
+            return false;
+        }
+        if (!result.name || !result.searchRecords || !result.records) {
+            return true;
+        }
+        return false;
+    }
+
+    formatResultforSalesforce(result) {
+        let resultObj;
+        console.log(result);
+        console.log(result.name);
+        if (result.name && !result.searchRecords) {
+            console.log('ff');
+            console.log(result);
+            resultObj = {
+                action: 'search',
+                query: `FIND {${result.name}} IN NAME FIELDS RETURNING Account(Id) LIMIT 1`,
+                name: result.name
+            };
+            console.log(resultObj);
+        } else if (result.name && result.searchRecords[0].Id && !result.records) {
+            const actTable = this.specParser.getActivityTableFor('Account');
+            resultObj = {...result,
+                action: 'query',
+                query: `select id, ${actTable.fields.join(',')}  from ${actTable.name} where account__c = '${result.searchRecords[0].Id}' limit 10`
+            };
+        }
+        console.log(resultObj);
+        return resultObj;
+    }
+}
   
-export class CustomSettingsPromptStrategy extends ComponentStrategy {
+class CustomSettingsPromptStrategy extends ComponentStrategy {
     performAction(component) {
       // Logic to perform actions on custom settings
     }
 }
   
-export class CustomObjectPromptStrategy extends ComponentStrategy {
+class CustomObjectPromptStrategy extends ComponentStrategy {
     performAction(component) {
       // Logic to perform actions on custom objects
     }
 }
+
+module.exports = {
+    CustomMetadataPromptStrategy,
+    SummaryPromptStrategy
+};
   

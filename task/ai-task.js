@@ -1,7 +1,8 @@
 const { LLMChain } = require("langchain/chains");
 const { Task } = require('./task');
+const { HumanChatMessage, SystemChatMessage } = require("langchain/schema");
 
-export class AiTask extends Task {
+class AiTask extends Task {
 
     prompt;
     model;
@@ -40,16 +41,23 @@ export class AiTask extends Task {
     }
 
     async perform() {
-        const chain = new LLMChain({ llm: this.model, prompt: this.prompt });
-        const res = await chain.call(
-            this.inputVarObj
+        const res = await this.model.call([
+            new HumanChatMessage(
+                this.prompt
+            )
+        ]
         );
-        if (res instanceof string) {
+        console.log(res);
+        if (res instanceof String) {
             this.result = {...this.result, ...JSON.parse(res)}
         } else {
-            this.result = {...this.result, ...res}
+            this.result = {...this.result, ...JSON.parse(res.text)}
         }
         return this.result;
     }
 
 }
+
+module.exports = {
+    AiTask
+};

@@ -1,0 +1,69 @@
+{
+    "customMetadataTypes": [
+        {
+            "name": "marbleCake__mdt",
+            "description": "A cake with a marbled appearance created by swirling together vanilla and chocolate or other flavored batters.",
+            "records": [
+                {
+                    "name": "chocolate",
+                    "label": "chocolate"
+                },
+                {
+                    "name": "vanilla",
+                    "label": "vanilla"
+                },
+                {
+                    "name": "pista",
+                    "label": "pista"
+                }
+            ],
+            "stateField": "Active__c"
+        },
+        {
+            "name": "cheeseCake__mdt",
+            "description": "Although technically not a traditional cake, cheesecake is a popular dessert consisting of a creamy filling made with cream cheese, eggs, and sugar on a cookie or graham cracker crust.",
+            "records": [
+                {
+                    "name": "chocolate",
+                    "label": "chocolate"
+                },
+                {
+                    "name": "vanilla",
+                    "label": "vanilla"
+                },
+                {
+                    "name": "pista",
+                    "label": "pista"
+                }
+            ],
+            "stateField": "IsActive__c"
+        },
+        {
+            "name": "coconutCake__mdt",
+            "description": "A cake infused with coconut flavor, often made with shredded coconut in the batter and coconut cream or frosting.",
+            "records": [
+                {
+                    "name": "chocolate",
+                    "label": "chocolate"
+                },
+                {
+                    "name": "vanilla",
+                    "label": "vanilla"
+                },
+                {
+                    "name": "pista",
+                    "label": "pista"
+                }
+            ]
+        }
+    ],
+    "Account": {
+        "mediaFields":[
+            "twitter__c"
+        ],
+        "activityTable": {
+            "name": "activity__c",
+            "fields": ["detail__c"]
+        }
+    }
+}

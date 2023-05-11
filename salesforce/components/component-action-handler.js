@@ -16,7 +16,7 @@ class ComponentAction {
     }
 }
 
-export class CustomMetadataAction extends ComponentAction {
+class CustomMetadataAction extends ComponentAction {
 
     mdata;
 
@@ -26,6 +26,7 @@ export class CustomMetadataAction extends ComponentAction {
 
     setComponentMetadata(metadata) {
         this.mdata = metadata;
+        return this;
     }
     
     async perform(action) {
@@ -33,7 +34,9 @@ export class CustomMetadataAction extends ComponentAction {
             case 'query':
                 
                 break;
-            case 'update', 'activate', 'inactivate':
+            case 'update':
+            case 'activate': 
+            case 'inactivate':
                 return await updateMetadata(this.con, 'CustomMetadata', this.mdata);
             case 'delete':
                 
@@ -69,3 +72,7 @@ export class CustomMetadataAction extends ComponentAction {
     }
 
 }*/
+
+module.exports = {
+    CustomMetadataAction
+};

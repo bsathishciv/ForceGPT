@@ -8,13 +8,14 @@ const queue = connectQueue(queueName);
 
 console.log('Queue connected: ' +queueName);
 
-const { OpenAI } = require("langchain/llms/openai");
-const model = new OpenAI({ openAIApiKey: process.env.OPENAI_API_KEY, temperature: 0.9 });
+const { ChatOpenAI } = require("langchain/chat_models/openai");
+const model = new ChatOpenAI({ modelName: "gpt-3.5-turbo", openAIApiKey: process.env.OPENAI_API_KEY, temperature: 0.9 });
 
 console.log('model configured!');
 
 queue.process(
     async (job) => {
+        console.log('Message: ' +job.data);
         jobHandler(job);
     }
 );
@@ -23,11 +24,11 @@ async function jobHandler(job) {
     const requestData = store.get(job.data.userId);
     if (requestData) {
         const conn = initializeSalesforceConnection(requestData.instanceUrl, requestData.sessionId);
-        const processor = new QueryProcessor(job.data.userId, model)
+        await new QueryProcessor(job.data.userId, model)
                                 .setComponentType(requestData.component)
-                                .setSfConnection(conn)
-                                .setQuery(requestData.text);
-        
-        await processor.process();
+                                .setConnection(conn)
+                                .setQuery(requestData.text)
+                                .process();
+        console.log(`--done--`);
     }
 }
