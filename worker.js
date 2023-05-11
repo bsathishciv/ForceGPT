@@ -15,7 +15,7 @@ const model = new ChatOpenAI({ modelName: "gpt-3.5-turbo", openAIApiKey: process
 console.log('model configured!');
 
 queue.process(
-    async (job, done) => {
+    (job, done) => {
         console.log('Message: ' +JSON.stringify(job.data));
         jobHandler(job, done);
     }
@@ -23,15 +23,18 @@ queue.process(
 
 async function jobHandler(job, done) {
     //const jsonObj = JSON.parse(fs.readFileSync(`${process.cwd()}/request-store.json`, 'utf8'));
-    const requestData = db.get(job.data.userId);
-    if (requestData) {
-        const conn = initializeSalesforceConnection(requestData.instanceUrl, requestData.sessionId);
-        await new QueryProcessor(job.data.userId, model, db)
-                                .setComponentType(requestData.component)
-                                .setConnection(conn)
-                                .setQuery(requestData.text)
-                                .process();
-        console.log(`--done--`);
+   try {
+        const requestData = db.get(job.data.userId);
+        if (requestData) {
+            const conn = initializeSalesforceConnection(requestData.instanceUrl, requestData.sessionId);
+            await new QueryProcessor(job.data.userId, model, db)
+                                    .setComponentType(requestData.component)
+                                    .setConnection(conn)
+                                    .setQuery(requestData.text)
+                                    .process();
+            console.log(`--done--`);
+        }
+   } finally {
         done();
-    }
+   }
 }

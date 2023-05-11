@@ -17,7 +17,7 @@ app.use(bodyParser.json());
 
 
 // Endpoint to handle incoming requests
-app.post('/process', async (req, res) => {
+app.post('/process', (req, res) => {
     console.log(req.body);
     const requestId = uuidv4();
     const requestData = req.body;
@@ -32,15 +32,14 @@ app.post('/process', async (req, res) => {
             }
         }
         //fs.writeFileSync(`${process.cwd()}/request-store.json`, JSON.stringify(obj));
+        db.delete(requestData.userId);
         db.set(requestData.userId, {
             ...requestData,
             response: null,
             isDone: false
         }); 
-        db.sync();
+        //db.sync();
     }
-
-    console.log(requestData);
     // Store the request in Redis
     queue.add({
         status: true,
