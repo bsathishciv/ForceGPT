@@ -6,7 +6,7 @@ const { AiTask } = require('./ai-task');
 const { SalesforceTask } = require('./salesforce-task');
 const { TaskManager } = require('./task-manager');
 const { CustomMetadataPromptStrategy, SummaryPromptStrategy } = require("../salesforce/components/component-prompt-strategy");
-const store = require('data-store')({ path: process.cwd() + '/request-store.json' });
+//const store = require('data-store')({ path: process.cwd() + '/request-store.json' });
 const fs = require('fs');
 
 class QueryProcessor {
