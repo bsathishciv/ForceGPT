@@ -1,5 +1,4 @@
 const { connectQueue } = require('./redis-config');
-const store = require('data-store')({ path: process.cwd() + '/request-store.json' });
 const { QueryProcessor } = require("./task/query-processor");
 const { initializeSalesforceConnection } = require("./salesforce/salesforce");
 
@@ -15,13 +14,14 @@ console.log('model configured!');
 
 queue.process(
     async (job) => {
-        console.log('Message: ' +job.data);
+        console.log('Message: ' +JSON.stringify(job.data));
         jobHandler(job);
     }
 );
 
 async function jobHandler(job) {
-    const requestData = store.get(job.data.userId);
+    const jsonObj = JSON.parse(fs.readFileSync(`${process.cwd()}/request-store.json`, 'utf8'));
+    const requestData = jsonObj[job.data.userId];
     if (requestData) {
         const conn = initializeSalesforceConnection(requestData.instanceUrl, requestData.sessionId);
         await new QueryProcessor(job.data.userId, model)
