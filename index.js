@@ -27,6 +27,7 @@ app.post('/process', async (req, res) => {
             response: null,
             isDone: false
         }); 
+        store.save();
     }
 
     console.log(requestData);
@@ -41,8 +42,8 @@ app.post('/process', async (req, res) => {
 });
 
 app.get('/status/:id', (req, res) => {
-    console.log(JSON.parse(fs.readFileSync(`${process.cwd()}/request-store.json`, 'utf8')));
     const resp = store.get(req.params.id);
+    console.log(resp);
     res.send(JSON.stringify(resp)); 
 });
 

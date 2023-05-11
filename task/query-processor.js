@@ -113,6 +113,7 @@ class QueryProcessor {
         console.log(response);
         const requestData = store.get(this.userId);
         store.set(this.userId, {...requestData, response: response, isDone: true});
+        store.save();
         console.log(store.get(this.userId));
     }
 
