@@ -17,8 +17,7 @@ const connectQueue = (name) => new Queue(name, {
 	},
 	defaultJobOptions: {
 		removeOnComplete: true,
-		removeOnFail: false,
-		attempts: 3,
+		removeOnFail: true,
 		retryProcessDelay: 20000,
 		stalledInterval: 0,
 		lockDuration: 30000

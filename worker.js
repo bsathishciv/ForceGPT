@@ -2,6 +2,7 @@ const { connectQueue } = require('./redis-config');
 const { QueryProcessor } = require("./task/query-processor");
 const { initializeSalesforceConnection } = require("./salesforce/salesforce");
 const fs = require('fs');
+const {db} = require("./db");
 
 const queueName = 'request-queue';
 const queue = connectQueue(queueName);
@@ -14,22 +15,23 @@ const model = new ChatOpenAI({ modelName: "gpt-3.5-turbo", openAIApiKey: process
 console.log('model configured!');
 
 queue.process(
-    async (job) => {
+    async (job, done) => {
         console.log('Message: ' +JSON.stringify(job.data));
-        jobHandler(job);
+        jobHandler(job, done);
     }
 );
 
-async function jobHandler(job) {
-    const jsonObj = JSON.parse(fs.readFileSync(`${process.cwd()}/request-store.json`, 'utf8'));
-    const requestData = jsonObj[job.data.userId];
+async function jobHandler(job, done) {
+    //const jsonObj = JSON.parse(fs.readFileSync(`${process.cwd()}/request-store.json`, 'utf8'));
+    const requestData = db.get(job.data.userId);
     if (requestData) {
         const conn = initializeSalesforceConnection(requestData.instanceUrl, requestData.sessionId);
-        await new QueryProcessor(job.data.userId, model)
+        await new QueryProcessor(job.data.userId, model, db)
                                 .setComponentType(requestData.component)
                                 .setConnection(conn)
                                 .setQuery(requestData.text)
                                 .process();
         console.log(`--done--`);
+        done();
     }
 }

@@ -26,6 +26,7 @@
     "langchain": "^0.0.72",
     "redis": "^4.6.6",
     "scrape-twitter": "^0.11.1",
+    "simple-json-db": "^2.0.0",
     "uuid": "^9.0.0"
   }
 }

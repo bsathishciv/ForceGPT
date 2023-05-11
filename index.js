@@ -2,8 +2,10 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const { v4: uuidv4 } = require('uuid');
 const { connectQueue } = require('./redis-config');
+const {db} = require("./db");
 //const store = require('data-store')({ path: process.cwd() + '/request-store.json' });
-const fs = require('fs');
+
+//const fs = require('fs');
 
 //dotenv.config()
 
@@ -29,13 +31,13 @@ app.post('/process', async (req, res) => {
                 isDone: false
             }
         }
-        fs.writeFileSync(`${process.cwd()}/request-store.json`, JSON.stringify(obj));
-        /*store.set(requestData.userId, {
+        //fs.writeFileSync(`${process.cwd()}/request-store.json`, JSON.stringify(obj));
+        db.set(requestData.userId, {
             ...requestData,
             response: null,
             isDone: false
         }); 
-        store.save();*/
+        db.sync();
     }
 
     console.log(requestData);
@@ -50,8 +52,9 @@ app.post('/process', async (req, res) => {
 });
 
 app.get('/status/:id', (req, res) => {
-    const jsonObj = JSON.parse(fs.readFileSync(`${process.cwd()}/request-store.json`, 'utf8'));
-    const resp = jsonObj[req.params.id];
+    const resp = db.get(req.params.id);
+    //const jsonObj = JSON.parse(fs.readFileSync(`${process.cwd()}/request-store.json`, 'utf8'));
+    //const resp = jsonObj[req.params.id];
     console.log(resp);
     res.send(JSON.stringify(resp)); 
 });
