@@ -42,7 +42,8 @@ app.post('/process', async (req, res) => {
 });
 
 app.get('/status/:id', (req, res) => {
-    const resp = store.get(req.params.id);
+    const jsonObj = JSON.parse(fs.readFileSync(`${process.cwd()}/request-store.json`, 'utf8'));
+    const resp = jsonObj[req.params.id];
     console.log(resp);
     res.send(JSON.stringify(resp)); 
 });
