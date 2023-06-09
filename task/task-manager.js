@@ -1,20 +1,21 @@
 /**
- * 
+ * Runs the task from task list. Emits hooks for pre and post execution.
  */
+
 class TaskManager {
 
     taskList = [];
     taskIdCounter = 1;
     maxIterations = 3;
     taskCreator;
+    currentTask;
 
     constructor(taskCreator) {
         this.taskCreator = taskCreator;
     }
-  
+
     addTask(task) {
         console.log(`---Adding new task---`);
-        console.log(Object.values(task.result));
         this.taskList.push(task);
         return this;
     }
@@ -24,21 +25,26 @@ class TaskManager {
             if (this.taskList.length == 0) {
                 break;
             }
-            const task = this.taskList.shift();
-            //await task.prepare();
-            if (task) {
-                const result = await task.perform();
-                if (this.hasError(result)) {
-                    await logError(result);
+            this.currentTask = this.taskList.shift();
+            if (this.currentTask) {
+                // emit pre hook
+                this.taskCreator.onPreExecution(this.currentTask, this.taskList);
+                if (this.currentTask.isDeferred()) {
+                    this.taskList.push(this.currentTask);
+                    continue;
+                }
+                await this.currentTask.perform();
+                if (this.hasError(this.currentTask.result)) {
+                    // TODO: ask user for more details
+                    await logError(this.currentTask.result);
                     break;
                 }
-                const newTask = this.taskCreator.generateNextTask(task, result);
-                if (newTask) {
-                    newTask.result = result;
-                    this.addTask(newTask);
-                }
+                // emit post hook
+                this.taskCreator.onPostExecution(this.currentTask, this.taskList);
+                await this.taskCreator.createNextTask(this.currentTask);
             }
         }
+        return this.currentTask.result;
     }
 
     hasError(result) {
@@ -50,10 +56,6 @@ class TaskManager {
 
     logError(result) {
         // TO DO
-    }
-
-    getNextTaskIndex(id) {
-        return this.taskList.findIndex(task => task.id == id + 1);
     }
 
 }

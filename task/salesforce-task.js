@@ -1,28 +1,31 @@
-/**
- * 
- */
-
-const { CustomMetadataAction } = require("../salesforce/components/component-action-handler");
 const { Task } = require('./task');
-const { query, search } = require('../salesforce/salesforce');
+const { query, search, metadata, describe, tooling, sobject } = require('../salesforce/salesforce');
 
+const functionMap = {
+    metadata: metadata,
+    query: query,
+    describe: describe,
+    tooling: tooling,
+    sobject: sobject
+};
+
+/**
+ * Task that performs action against salesforce
+ */
 class SalesforceTask extends Task {
     
     error;
     detail = {};
     response;
     conn;
-    resultObj;
+    result;
+    cmd;
+    deferred = false;
 
     constructor(id, name) {
-        super()
+        super();
         this.name = name;
         this.id = id;
-    }
-
-    setResultObj(obj) {
-        this.detail = obj;
-        return this;
     }
 
     setConnection(con) {
@@ -30,51 +33,63 @@ class SalesforceTask extends Task {
         return this;
     }
 
-    async perform() {
-        if (this.detail.componentType == 'CustomMetadata') {
-            if (this.detail.action == 'activate' || this.detail.action == 'inactivate') {
-                const mdata = this.generateMetadata(
-                    this.detail.componentName,
-                    this.detail.recordData
-                );
-                const result = await new CustomMetadataAction(this.conn)
-                    .setComponentMetadata(
-                        mdata
-                    )
-                    .perform(this.detail.action);
-                return result;
-            }
-        } else if (this.detail.action == 'query') {
-            let result = await query(this.conn, this.detail.query);
-            result = {...result, ...this.detail};
-            return result;
-        } else if (this.detail.action == 'search') {
-            let result = await search(this.conn, this.detail.query);
-            result = {...result, ...this.detail};
-            return result;
-        }
-        return null;
+    setType(type) {
+        this.type = type;
+        return this;
     }
 
-    generateMetadata(componentName, recordData) {
-        const mdata = {
-            fullName: `${componentName}.${recordData.developerName}`,
-            label: recordData.Label,
-            values: []
-        };
-        delete recordData.Label;
-        Object.keys(recordData).forEach((key) => {
-            if (key == 'developerName') {
-                return;
-            }
-            mdata.values.push(
-                {
-                    field: key,
-                    value: recordData[key]
-                }
-            )
-        });
-        return mdata;
+    command(cmd) {
+        this.cmd = cmd;
+        return this;
+    }
+
+    setArgs(args) {
+        this.args = args;
+        return this;
+    }
+
+    isDeferred() {
+        return this.deferred;
+    }
+
+    defer() {
+        this.deferred = true;
+    }
+
+    expedite() {
+        this.deferred = false;
+    }
+
+    setIsLast(last) {
+        this.isLast = last;
+        return this;
+    }
+
+    async perform() {
+        const func = functionMap[this.type];
+        if (func) {
+            this.result = await func.call(null, this.conn, this.cmd, this.args);
+        }
+        /*switch (this.type) {
+            case 'metadata':
+                this.result = await metadata(this.conn, this.cmd, this.args);
+                break;
+            case 'query':
+                this.result = await query(this.conn, this.cmd, this.args);
+                break;
+            case 'describe':
+                this.result = await describe(this.conn, this.cmd, this.args);
+                break;
+            case 'tooling':
+                this.result = await tooling(this.conn, this.cmd, this.args);
+                break;
+            case 'sobject':
+                this.result = await sobject(this.conn, this.cmd, this.args);
+                break;
+            default:
+                break;
+        }
+        return null;*/
     }
 
 }

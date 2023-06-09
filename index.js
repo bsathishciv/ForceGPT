@@ -2,13 +2,10 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const { v4: uuidv4 } = require('uuid');
 const { connectQueue } = require('./redis-config');
-const {db} = require("./db");
-const {jobHandler} = require("./worker");
-//const store = require('data-store')({ path: process.cwd() + '/request-store.json' });
+const Db = require("./db");
 
-//const fs = require('fs');
-
-//dotenv.config()
+const db = new Db();
+db.init();
 
 const queueName = 'request-queue';
 const queue = connectQueue(queueName);
@@ -18,45 +15,48 @@ app.use(bodyParser.json());
 
 
 // Endpoint to handle incoming requests
-app.post('/process', (req, res) => {
+app.post('/process', async (req, res) => {
     console.log(req.body);
     const requestId = uuidv4();
     const requestData = req.body;
 
-    if (requestData.userId) {
-        // overwrite the latest message for the orgId for simplicity and POC
-        const obj = {
-                ...requestData,
-                response: null,
-                isDone: false
-        }
-        //fs.writeFileSync(`${process.cwd()}/request-store.json`, JSON.stringify(obj));
-        db.delete(requestData.userId);
-        console.log(db.has(requestData.userId));
-        db.set(requestData.userId, obj); 
-        console.log('1');
-        console.log(requestData.userId);
-        jobHandler({data: obj}, db)
+    // overwrite the latest message for the orgId and userId for simplicity and prototype phase.
+    // no need to store history
+    try {
+        await db.createJob(requestData.userId, requestData.orgId, requestData);
+
+        // Store the request in Redis
+        queue.add({
+            status: true,
+            ...requestData
+        });
+        return res.send({ status: true, error: null });
+    } catch(e) {
+        return res.send({ status: false, error: JSON.stringify(e) });
     }
-    // Store the request in Redis
-    /*queue.add({
-        status: true,
-        ...requestData
-    });*/
-    console.log('3');
-    return res.send({ status: true, error: null });
 
 });
 
-app.get('/status/:id', (req, res) => {
-    const resp = db.get(req.params.id);
-    //const jsonObj = JSON.parse(fs.readFileSync(`${process.cwd()}/request-store.json`, 'utf8'));
-    //const resp = jsonObj[req.params.id];
-    console.log(resp);
+app.get('/', (req, res) => {
+    res.send(
+        `'########::'#######::'########:::'######::'########::'######:::'########::'########:
+          ##.....::'##.... ##: ##.... ##:'##... ##: ##.....::'##... ##:: ##.... ##:... ##..::
+          ##::::::: ##:::: ##: ##:::: ##: ##:::..:: ##::::::: ##:::..::: ##:::: ##:::: ##::::
+          ######::: ##:::: ##: ########:: ##::::::: ######::: ##::'####: ########::::: ##::::
+          ##...:::: ##:::: ##: ##.. ##::: ##::::::: ##...:::: ##::: ##:: ##.....:::::: ##::::
+          ##::::::: ##:::: ##: ##::. ##:: ##::: ##: ##::::::: ##::: ##:: ##::::::::::: ##::::
+          ##:::::::. #######:: ##:::. ##:. ######:: ########:. ######::: ##::::::::::: ##::::
+         ..:::::::::.......:::..:::::..:::......:::........:::......::::..::::::::::::..:::::
+        `
+    ); 
+});
+
+app.get('/status/:id', async (req, res) => {
+    const resp = await db.getJob(req.params.id);
     res.send(JSON.stringify(resp)); 
 });
 
 // Start the Express server
-app.listen(process.env.PORT || 8086, () => {
+app.listen(process.env.PORT || 8080, () => {
   console.log('Server listening on port 8080');
 });

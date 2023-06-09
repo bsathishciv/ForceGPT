@@ -1,0 +1,44 @@
+{
+    "name": "ForceGPT",
+    "description": "ChatGPT based AI Assistant for Salesforce Administrators.",
+    "keywords": [
+		"Productivity",
+		"Salesforce",
+		"ChatGPT",
+		"LangChainAI"
+    ],
+    "repository": "",
+    "success_url": "/",
+    "env": {
+    	"OPENAI_API_KEY": {
+			"description": "Your OpenAI API key",
+			"value": ""
+      	},
+		"LLM": {
+			"description": "The model to be used",
+			"value": "gpt-3.5-turbo"
+		}
+    },
+    "formation": {
+		"web": {
+			"quantity": 1,
+			"size": "basic"
+		},
+		"worker": {
+			"quantity": 1,
+			"size": "basic"
+		}
+    },
+    "addons": [
+		{
+			"plan": "heroku-redis:mini",
+			"as": "REDIS"
+		},
+		{
+			"plan": "logdna:quaco"
+		},
+		{
+			"plan": "heroku-postgresql:mini"
+		}
+	]
+  }

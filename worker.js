@@ -1,48 +1,57 @@
 const { connectQueue } = require('./redis-config');
-const { QueryProcessor } = require("./task/query-processor");
+const { TaskCreator } = require("./task/task-creator");
 const { initializeSalesforceConnection } = require("./salesforce/salesforce");
-const fs = require('fs');
-const {db} = require("./db");
+const { ChatOpenAI } = require("langchain/chat_models/openai");
+const { ComponentRegistry } = require('./salesforce/component');
+const Db = require("./db");
 
+// DB CONNECTION
+const db = new Db();
+db.init();
+
+// SETUP REDIS
 const queueName = 'request-queue';
 const queue = connectQueue(queueName);
-
 console.log('Queue connected: ' +queueName);
 
-const { ChatOpenAI } = require("langchain/chat_models/openai");
-const model = new ChatOpenAI({ modelName: "gpt-3.5-turbo", openAIApiKey: process.env.OPENAI_API_KEY, temperature: 0.9 });
-
+// SETUP MODEL
+const model = new ChatOpenAI(
+    { 
+        modelName: process.env.LLM, 
+        openAIApiKey: process.env.OPENAI_API_KEY, 
+        temperature: 0.9 
+    }
+);
 console.log('model configured!');
 
+// INIT COMPONENT REGISTRY
+const registry = new ComponentRegistry();
+registry.init();
+console.log(registry.components)
+console.log('Registry initialized!');
+
 queue.process(
-    (job, done) => {
-        console.log('Message: ' +JSON.stringify(job.data));
-        jobHandler(job, done);
+    async (job) => {
+        jobHandler(job);
     }
 );
 
-// TO DO: Fix redis job remaining in queue issue
-async function jobHandler(job, db) {
-    //const jsonObj = JSON.parse(fs.readFileSync(`${process.cwd()}/request-store.json`, 'utf8'));
+async function jobHandler(job) {
    try {
-    console.log('2');
-    console.log(job);
-        const requestData = db.get(job.data.userId);
+        const requestData = job.data;
         console.log(requestData);
         if (requestData) {
             const conn = initializeSalesforceConnection(requestData.instanceUrl, requestData.sessionId);
-            await new QueryProcessor(job.data.userId, model, db)
-                                    .setComponentType(requestData.component)
-                                    .setConnection(conn)
-                                    .setQuery(requestData.text)
-                                    .process();
+            await new TaskCreator(requestData.userId, requestData.orgId, model, db)
+                .setConnection(conn)
+                .setObjective(requestData.text)
+                .setComponentRegistry(registry)
+                .create();
             console.log(`--done--`);
         }
-   } catch (e) {
+    } catch (e) {
         console.log(e);
-    }finally {
-        //done();
-   }
+    }
 }
 
 module.exports = {

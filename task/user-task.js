@@ -1,3 +1,5 @@
-class UserTask extends Task {
+class UserTask extends Task {}
 
+module.exports = {
+    UserTask
 }

@@ -24,6 +24,7 @@
     "js-yaml": "^4.1.0",
     "jsforce": "^1.11.1",
     "langchain": "^0.0.72",
+    "pg": "^8.11.0",
     "redis": "^4.6.6",
     "scrape-twitter": "^0.11.1",
     "simple-json-db": "^2.0.0",

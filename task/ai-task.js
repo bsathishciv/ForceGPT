@@ -2,6 +2,9 @@ const { LLMChain } = require("langchain/chains");
 const { Task } = require('./task');
 const { HumanChatMessage, SystemChatMessage } = require("langchain/schema");
 
+/**
+ * Task that chats with AI model for completion/extraction
+ */
 class AiTask extends Task {
 
     prompt;
@@ -9,6 +12,17 @@ class AiTask extends Task {
     inputVarObj;
     workerFunc;
     result = {};
+    isInitial = false;
+
+    setIsInitial(initial) {
+        this.isInitial = initial;
+        return this;
+    }
+
+    setResult(res) {
+        this.result = res;
+        return this;
+    }
 
     setModel(model) {
         this.model = model;
@@ -27,20 +41,22 @@ class AiTask extends Task {
     }
 
     async injectDetail(result) {
-        await this.workerFunc(this.prompt, result);
+        this.prompt = this.workerFunc(this.prompt, result);
     }
 
     setInputVars(obj) {
         this.inputVarObj = obj;
         return this;
     }
-
-    // prepare for execution
-    async prepare() {
-        // TO DO
+    
+    setIsLast(last) {
+        console.log(last);
+        this.isLast = last;
+        return this;
     }
 
     async perform() {
+        // TODO: Differentiate the chat message type. System and Human and Bot
         const res = await this.model.call([
             new HumanChatMessage(
                 this.prompt
@@ -51,7 +67,7 @@ class AiTask extends Task {
         if (res instanceof String) {
             this.result = {...this.result, ...JSON.parse(res)}
         } else {
-            this.result = {...this.result, ...JSON.parse(res.text)}
+            this.result = JSON.parse(res.text)
         }
         return this.result;
     }

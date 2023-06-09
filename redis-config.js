@@ -13,14 +13,16 @@ const connectQueue = (name) => new Queue(name, {
 		host: parsedURL.hostname || 'localhost',
 		port: Number(parsedURL.port || 6379),
 		password: parsedURL.password ? decodeURIComponent(parsedURL.password) : null,
-		tls: { rejectUnauthorized: false }
+		tls: { rejectUnauthorized: false },
+		enableTLSForSentinelMode: false,
+		maxRetriesPerRequest: 1
 	},
 	defaultJobOptions: {
 		removeOnComplete: true,
 		removeOnFail: true,
 		retryProcessDelay: 20000,
 		stalledInterval: 0,
-		lockDuration: 30000
+		maxRetriesPerRequest: 1
 	}
 });
 
