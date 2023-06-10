@@ -57,7 +57,7 @@ class Db {
             const row = await this.getJob(userId, orgId);
             let result;
             if (row) {
-                const query = "UPDATE job2 SET is_done = false, result = '', payload = $3 WHERE user_id = $1 and org_id = $2 returning *";
+                const query = "UPDATE job2 SET is_done = false, result = '', payload = $3, org_id = $2 WHERE user_id = $1 returning *";
                 result = await this.client.query(query, [userId, orgId, JSON.stringify(payload)]);
             } else {
                 const query = "INSERT INTO job2 (user_id, org_id, is_done, payload, result) values ($1, $2, false, $3, '') returning *;";
