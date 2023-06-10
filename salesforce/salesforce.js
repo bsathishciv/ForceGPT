@@ -18,6 +18,7 @@ async function query(con, command, args) {
     try {
         const results = await con[command](...args);
         console.log(results);
+        return results;
     } catch(e) {
             console.log(e)
         }
