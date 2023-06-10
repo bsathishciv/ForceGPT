@@ -57,6 +57,9 @@ app.get('/', (req, res) => {
 
 app.get('/status/:id', async (req, res) => {
     const resp = await db.getJob(req.params.id);
+    if (resp.is_done && !resp.result) {
+        resp.result = "An unexpected error occurred. Please try again!"
+    }
     res.send(JSON.stringify(resp)); 
 });
 
