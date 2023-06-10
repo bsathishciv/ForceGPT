@@ -16,9 +16,16 @@ function initializeSalesforceConnection(instanceUrl, sessionId) {
 
 async function query(con, command, args) {
     try {
-        const results = await con[command](...args);
-        console.log(results);
-        return results;
+        const result = await con[command](...args);
+        console.log(result);
+        if (result.records && result.records.length) {
+            result.records.forEach(
+                rec => {
+                    delete rec.attributes;
+                }
+            )
+        }
+        return result;
     } catch(e) {
             console.log(e)
         }
