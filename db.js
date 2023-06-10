@@ -43,6 +43,7 @@ class Db {
     async getJob(userId) {
         const query = 'SELECT is_done, result FROM job2 WHERE user_id = $1 ORDER BY created_at DESC LIMIT 1';
         const result = await this.client.query(query, [userId]);
+        console.log(result);
         return result.rows[0];
     }
 
