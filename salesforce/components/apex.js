@@ -26,6 +26,20 @@ class Apex extends Component {
                     Respond in JSON with the above format and with no other explanations.
                     `;
             case 'delete':
+            case 'beautify':
+                return `
+                    From the user-text below extract only the actual code under "Execute Anonymous:" and meaningful DEBUG statements and respond as below format in JSON
+                    ---
+                    {
+                        "code": "<the apex code here>",
+                        "result": "the debug info here "
+                    }
+                    ---
+                    user-text: "${objective}"
+                    --
+                    Note: Make the result attribute more descriptive with the debug info. It should definitely contain the debug info, but you have to enrich it more descriptive fashion
+                    Respond in JSON with the above format and with no other explanations.
+                    `;
             default:
                 break;
         }
@@ -51,16 +65,24 @@ class Apex extends Component {
                         }
                     );
                 }
-                else {
-                    if (this.getConcreteCommand(task.cmd) == 'query') {
-                        creator.createSalesforceTask(
-                            {
-                                command: "sobject.ApexLog.retrieve",
-                                args: {
-                                    id: `${task.result.records[0].Id}/Body`
-                                }
+                else if (this.getConcreteCommand(task.cmd) == 'query') {
+                    creator.createSalesforceTask(
+                        {
+                            command: "sobject.ApexLog.retrieve",
+                            args: {
+                                id: `${task.result.records[0].Id}/Body`
                             }
-                        );
+                        }
+                    );
+                } else {
+                    if (this.getConcreteCommand(task.cmd) == 'retrieve') {
+                        if (process.env.BEAUTIFY_DEBUG_LOGS) { // it is costly as it feeds many token to the model for summarization
+                            creator.createAiTask(
+                                this.getPromptFor(task.result, 'beautify'),
+                                false,
+                                true
+                            );
+                        }
                     }
                 }
             }
