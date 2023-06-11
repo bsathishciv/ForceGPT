@@ -48,7 +48,7 @@ This will automatically create an app with desired addons and features.
 <hr/>
 <h2 align="center"> 💖 Help Fund ForceGPT's Development 💖</h2>
 <p align="center">
-    Spare us a coffee! If you'd like to sponsor this project and have your avatar or company logo appear below click here.
+    Spare us a coffee! If you'd like to sponsor this project and have your avatar or company logo appear below <a href="https://github.com/sponsors/bsathishciv">click here</a>.
 </p>
 <hr/>
 
