@@ -1,3 +1,8 @@
+/**
+ * JSForce command and argument parser from LLM results
+ * @author Sathish Balaji <bsathish.civ@gmail.com>
+ */
+
 class InvalidJSFCommand extends Error {
     constructor(message) {
         super(message);

@@ -1,3 +1,8 @@
+/**
+ * Database operations
+ * @author Sathish Balaji <bsathish.civ@gmail.com>
+ */
+
 const { Pool } = require('pg');
 
 class Db {

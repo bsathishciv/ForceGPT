@@ -1,3 +1,8 @@
+/**
+ * Command executor for Apex anonymous runs
+ * @author Rajasneha Chidambaranathan <rajasneha20@gmail.com>
+ */
+
 const { SalesforceTask } = require("../../task/salesforce-task");
 const { Component } = require("../component");
 

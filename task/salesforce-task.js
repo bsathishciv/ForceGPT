@@ -1,3 +1,8 @@
+/**
+ * Executes action against salesforce.
+ * @author Sathish Balaji <bsathish.civ@gmail.com>
+ */
+
 const { Task } = require('./task');
 const { query, search, metadata, describe, tooling, sobject } = require('../salesforce/salesforce');
 
@@ -70,26 +75,6 @@ class SalesforceTask extends Task {
         if (func) {
             this.result = await func.call(null, this.conn, this.cmd, this.args);
         }
-        /*switch (this.type) {
-            case 'metadata':
-                this.result = await metadata(this.conn, this.cmd, this.args);
-                break;
-            case 'query':
-                this.result = await query(this.conn, this.cmd, this.args);
-                break;
-            case 'describe':
-                this.result = await describe(this.conn, this.cmd, this.args);
-                break;
-            case 'tooling':
-                this.result = await tooling(this.conn, this.cmd, this.args);
-                break;
-            case 'sobject':
-                this.result = await sobject(this.conn, this.cmd, this.args);
-                break;
-            default:
-                break;
-        }
-        return null;*/
     }
 
 }

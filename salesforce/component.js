@@ -1,3 +1,8 @@
+/**
+ * Component high level class
+ * @author Sathish Balaji <bsathish.civ@gmail.com>
+ */
+
 const fs = require('fs');
 const path = require('path');
 const { AiTask } = require('../task/ai-task');
@@ -65,6 +70,9 @@ class Component {
     }
 }
 
+/**
+ * Registers all the components listed under components/ folder
+ */
 class ComponentRegistry {
 
     components = {};

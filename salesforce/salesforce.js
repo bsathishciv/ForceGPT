@@ -1,5 +1,6 @@
 /**
- * 
+ * JSforce operations
+ * @author Rajasneha Chidambaranathan <rajasneha20@gmail.com>
  */
 
 const jsforce =  require('jsforce');

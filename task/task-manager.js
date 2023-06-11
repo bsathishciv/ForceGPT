@@ -1,5 +1,6 @@
 /**
  * Runs the task from task list. Emits hooks for pre and post execution.
+ * @author Sathish Balaji <bsathish.civ@gmail.com>
  */
 
 class TaskManager {
