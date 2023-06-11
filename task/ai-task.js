@@ -1,3 +1,8 @@
+/**
+ * Executes chat with the configured model.
+ * @author Sathish Balaji <bsathish.civ@gmail.com>
+ */
+
 const { LLMChain } = require("langchain/chains");
 const { Task } = require('./task');
 const { HumanChatMessage, SystemChatMessage } = require("langchain/schema");

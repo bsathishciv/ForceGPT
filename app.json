@@ -17,6 +17,10 @@
 		"LLM": {
 			"description": "The model to be used",
 			"value": "gpt-3.5-turbo"
+		},
+		"BEAUTIFY_DEBUG_LOGS": {
+			"description": "Summarizes the debug logs to present the meaningful information.",
+			"value": true
 		}
     },
     "formation": {
