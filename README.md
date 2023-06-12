@@ -1,6 +1,8 @@
 <h1 align="center">ForceGPT: AI Asssitant for Salesforce users</h1>
-
+    
 ForceGPT is tool that harnesses the power of OpenAI's GPT models to seamlessly perform tasks in Salesforce based on natural language user expressions. This tool is capable of executing tasks, generating new tasks based on the results, and dynamically prioritizing them in real-time.
+
+
 
 ## 🚀 Features
 - 🌐 Executes actions on salesforce.
@@ -15,6 +17,9 @@ This is in highly prototype phase and currently supports following few use cases
 3. Deletes Apex debug logs.
 4. describes sobject.
 5. 🧠 Generates and executes apex. If you can craft a clear question, you can acheive almost anything from here.
+
+# ☠️ This is in prototype phase and not meant for production use yet ☠️
+
 <hr/>
 
 ## Setup
@@ -52,6 +57,21 @@ This will automatically create an app with desired addons and features.
 </p>
 <hr/>
 
+## ⚠️ Limitations
+This is an experimental project that aims to demonstrate the capabilities of LLMs.
+1. As it is not trained in any org data and chatGPT is a general LLM, **use API names** for all the components to acheive the desired result.
+2. It currently uses gpt-3.5-turbo, which is not as accurate as GPT-4 model. So if it produces any unexpected result, try asking the same thing again.
+3. If the component or command is not supported, then it answers the questions as a general Question Answering.
+4. The database model used to store the user query and response has the primary key of salesforce user Id. Hence if multiple users use the same salesforce user to chat with same app, then there will be inconsistencies.
+5. DO NOT USE IN PRODUCTION YET.
+<hr/>
+
+## Privacy
+
+1. Any data that is queried from salesforce remain at the tool level and not exposed to the LLM. The debu logs that are summarized as part of Apex execution can be turned down by a setting.
+2. User inputs are fed into the LLM.
+<hr/>
+
 ## Roadmap
 
 V2:
@@ -65,20 +85,6 @@ V2:
 
 V3:
 1. Fine-tune a base model for salesforce specific tasks - all of th above tasks.
-<hr/>
-
-## Privacy
-
-1. Any data that is queried from salesforce remain at the tool level and not exposed to the LLM. The debu logs that are summarized as part of Apex execution can be turned down by a setting.
-2. User inputs are fed into the LLM.
-<hr/>
-
-## ⚠️ Limitations
-This is an experimental project that aims to demonstrate the capabilities of LLMs.
-1. It currently uses gpt-3.5-turbo, which is not as accurate as GPT-4 model. So if it produces any unexpected result, try asking the same thing again.
-2. If the component or command is not supported, then it answers the questions as a general Question Answering.
-3. The database model used to store the user query and response has the primary key of salesforce user Id. Hence if multiple users use the same salesforce user to chat with same app, then there will be inconsistencies.
-4. DO NOT USE IN PRODUCTION YET.
 <hr/>
 
 ## 🛡 Disclaimer
@@ -120,9 +126,9 @@ Contributing is easy, and there are many ways to get involved:
 ## Get Started!
 
 Ready to jump in and contribute? Feel free to reach out to us through following platforms:
-- Discord - <will be shared soon>
-- Email - <will be shared soon>
-- Telegram - <will be shared soon>
+- Discord - will be shared soon
+- Email - will be shared soon
+- Telegram - will be shared soon
 
 Thank you for considering joining us in maintaining this open source project. Together, we can create something amazing!
 
