@@ -2,6 +2,7 @@
     
 ForceGPT is tool that harnesses the power of OpenAI's GPT models to seamlessly perform tasks in Salesforce based on natural language user expressions. This tool is capable of executing tasks, generating new tasks based on the results, and dynamically prioritizing them in real-time.
 
+Watch the intro video here - https://www.rsforce.net/post/forcegpt-your-true-salesforce-assistant
 
 
 ## 🚀 Features
